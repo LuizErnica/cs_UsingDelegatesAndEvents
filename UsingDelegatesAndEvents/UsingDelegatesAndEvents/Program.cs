@@ -35,6 +35,41 @@
             button.ButtonPressed += ShowLogMessage; // Subscribe to the ButtonPressed event with a method that logs a message
 
             button.Press(); // Simulate pressing the button, which will trigger the ButtonPressed event and call all subscribed event handlers
+
+            // Now we are going to test Person Validation with events and delegates...
+
+            //Person person = new("Bill", "bill-abc.com", 12); // Create a Person instance with invalid data (email missing '@' and age less than 18)
+            //Person person = new(null, "bill-abc.com", 12); // Create a Person instance with invalid data (email missing '@' and age less than 18)
+            //Person? person = null;
+            //Person person = new("Antony", "antony-abc.com", 12); // Create a Person instance with invalid data (email missing '@' and age less than 18)
+            //Person person = new("Antony", "antony@abc.com", 12); // Create a Person instance with invalid data (email missing '@' and age less than 18)
+            Person person = new("Antony", "antony@abc.com", 23); // Create a Person instance with invalid data (email missing '@' and age less than 18)
+
+            // Create a PersonValidator instance and add validation rules using lambda expressions
+            var validator = new PersonValidator()
+                .AddRule(r => string.IsNullOrWhiteSpace(person.Name) ? "Name cannot be empty." : string.Empty)
+                //.AddRule(r => person.Name!.Length < 5 ? "Name length must have at least 5 digits." : string.Empty) // This one will throw a NullReferenceException if person.Name is null.
+                .AddRule(r => person.Name?.Length < 5 ? "Name length must have at least 5 digits." : string.Empty)
+                .AddRule(r => !person.Email.Contains("@") ? "Email must contain an '@' symbol." : string.Empty)
+                .AddRule(r => person.Age < 18 ? "Person must be at least 18 years old." : string.Empty);
+
+            // Validate the person and display errors if any
+            if (!validator.Validate(person, out var errors))
+            {
+                Console.WriteLine("\nPerson is invalid. Errors:");
+                Console.ForegroundColor = ConsoleColor.Red;
+
+                foreach (var error in errors!)
+                {
+                    Console.WriteLine($"- {error}");
+                }
+
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.WriteLine("\nPerson is valid.");
+            }
         }
 
         /// <summary>
